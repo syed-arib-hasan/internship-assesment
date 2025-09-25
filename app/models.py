@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table, UniqueConstraint
 from sqlalchemy.orm import relationship
 from .database import Base
-import datetime
+from datetime import datetime, timezone
 
 # Person is *abstract* conceptually — we use Python inheritance but each subclass has its own table
 class PersonMixin:
@@ -31,7 +31,7 @@ class Enrollment(Base):
     id = Column(Integer, primary_key=True, index=True)
     student_id = Column(Integer, ForeignKey("students.id"))
     course_id = Column(Integer, ForeignKey("courses.id"))
-    enrolled_at = Column(DateTime, default=datetime.datetime.utcnow)
+    enrolled_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     student = relationship("Student", back_populates="enrollments")
     course = relationship("Course", back_populates="enrollments")

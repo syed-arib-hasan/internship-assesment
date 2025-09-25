@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class StudentCreate(BaseModel):
@@ -7,8 +7,7 @@ class StudentCreate(BaseModel):
 
 class StudentOut(StudentCreate):
     id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class TeacherCreate(BaseModel):
     name: str
@@ -16,8 +15,7 @@ class TeacherCreate(BaseModel):
 
 class TeacherOut(TeacherCreate):
     id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class CourseCreate(BaseModel):
     title: str
@@ -26,8 +24,7 @@ class CourseCreate(BaseModel):
 
 class CourseOut(CourseCreate):
     id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class EnrollmentCreate(BaseModel):
     student_id: int

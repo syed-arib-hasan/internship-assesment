@@ -4,11 +4,15 @@ from sqlalchemy.exc import IntegrityError
 
 # Students
 def create_student(db: Session, student: schemas.StudentCreate):
-    db_student = models.Student(name=student.name, email=student.email)
-    db.add(db_student)
-    db.commit()
-    db.refresh(db_student)
-    return db_student
+    try:
+        db_student = models.Student(name=student.name, email=student.email)
+        db.add(db_student)
+        db.commit()
+        db.refresh(db_student)
+        return db_student
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("Student with this email already exists")
 
 def get_student(db: Session, student_id: int):
     return db.query(models.Student).filter(models.Student.id == student_id).first()
@@ -23,11 +27,15 @@ def delete_student(db: Session, student_id: int) -> bool:
 
 # Teachers
 def create_teacher(db: Session, teacher: schemas.TeacherCreate):
-    dbt = models.Teacher(name=teacher.name, email=teacher.email)
-    db.add(dbt)
-    db.commit()
-    db.refresh(dbt)
-    return dbt
+    try:
+        dbt = models.Teacher(name=teacher.name, email=teacher.email)
+        db.add(dbt)
+        db.commit()
+        db.refresh(dbt)
+        return dbt
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("Teacher with this email already exists")
 
 def get_teacher(db: Session, teacher_id: int):
     return db.query(models.Teacher).filter(models.Teacher.id == teacher_id).first()

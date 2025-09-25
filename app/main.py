@@ -1,11 +1,14 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from .database import init_db
 from .routes import router
 
-app = FastAPI(title="SMS (simple)")
-
-@app.on_event("startup")
-def on_startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
     init_db()
+    yield
+    # Shutdown (if needed)
 
+app = FastAPI(title="SMS (simple)", lifespan=lifespan)
 app.include_router(router)

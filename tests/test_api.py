@@ -1,10 +1,9 @@
+import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 
-client = TestClient(app)
 
-
-def test_create_student_success():
+def test_create_student_success(client):
     payload = {"name": "Alice", "email": "alice@example.com"}
     r = client.post("/students", json=payload)
     assert r.status_code == 200
@@ -14,27 +13,27 @@ def test_create_student_success():
     assert isinstance(data["id"], int)
 
 
-def test_get_student_not_found():
+def test_get_student_not_found(client):
     r = client.get("/students/999999")
     assert r.status_code == 404
 
 
-def _create_teacher(name: str, email: str) -> int:
+def _create_teacher(client, name: str, email: str) -> int:
     r = client.post("/teachers", json={"name": name, "email": email})
     assert r.status_code == 200
     return r.json()["id"]
 
 
-def _create_course(title: str, capacity: int, teacher_id: int | None) -> int:
+def _create_course(client, title: str, capacity: int, teacher_id: int | None) -> int:
     r = client.post("/courses", json={"title": title, "capacity": capacity, "teacher_id": teacher_id})
     assert r.status_code == 200
     return r.json()["id"]
 
 
-def test_enroll_capacity_limit():
+def test_enroll_capacity_limit(client):
     # create teacher and a course with capacity 1
-    tid = _create_teacher("T1", "t1@example.com")
-    cid = _create_course("C1", 1, tid)
+    tid = _create_teacher(client, "T1", "t1@example.com")
+    cid = _create_course(client, "C1", 1, tid)
 
     # create two students
     s1 = client.post("/students", json={"name": "S1", "email": "s1@example.com"}).json()["id"]
@@ -50,7 +49,7 @@ def test_enroll_capacity_limit():
     assert "full" in r2.json()["detail"].lower()
 
 
-def test_import_scraped_dedup_and_list():
+def test_import_scraped_dedup_and_list(client):
     sample = [
         {"title": "A", "link": "http://x/1", "image_url": "i", "price": "10", "scraped_at": "now"},
         {"title": "B", "link": "http://x/2", "image_url": "i2", "price": "12", "scraped_at": "now"},
@@ -72,9 +71,9 @@ def test_import_scraped_dedup_and_list():
     assert len(r3.json()) >= 2
 
 
-def test_create_course_and_get():
-    tid = _create_teacher("T2", "t2@example.com")
-    cid = _create_course("C2", 30, tid)
+def test_create_course_and_get(client):
+    tid = _create_teacher(client, "T2", "t2@example.com")
+    cid = _create_course(client, "C2", 30, tid)
     r = client.get(f"/courses/{cid}")
     assert r.status_code == 200
     body = r.json()
